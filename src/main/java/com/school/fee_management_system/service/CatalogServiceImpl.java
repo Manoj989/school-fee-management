@@ -1,5 +1,6 @@
 package com.school.fee_management_system.service;
 
+import com.school.fee_management_system.Exception.ResourceNotFoundException;
 import com.school.fee_management_system.model.Catalog;
 import com.school.fee_management_system.repository.CatalogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public Catalog getCatalogById(String id) {
-        return catalogRepository.findById(id).orElseThrow(() -> new RuntimeException("Catalog not found"));
+        return catalogRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Catalog not found"));
     }
     @Override
     public List<Catalog> getAllCatalogs() {
