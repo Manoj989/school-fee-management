@@ -1,5 +1,6 @@
 package com.school.fee_management_system.service;
 
+import com.school.fee_management_system.Exception.ResourceNotFoundException;
 import com.school.fee_management_system.model.Receipt;
 import com.school.fee_management_system.repository.ReceiptRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,8 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class ReceiptServiceImplTest {
 
@@ -25,34 +26,34 @@ class ReceiptServiceImplTest {
     }
 
     @Test
-    void getReceiptByOrderId_existingOrderId_returnsReceipt() {
+    void testGetReceiptByOrderId_Success() {
         // Arrange
-        String orderId = "order123";
-        Receipt expectedReceipt = new Receipt();
-        expectedReceipt.setId("rec123");
-        expectedReceipt.setOrderId(orderId);
-        when(receiptRepository.findByOrderId(orderId)).thenReturn(expectedReceipt);
+        String orderId = "receipt3";
+        Receipt receipt = new Receipt();
+        receipt.setOrderId(orderId);
+        when(receiptRepository.findByOrderId(orderId)).thenReturn(receipt);
 
         // Act
-        Receipt actualReceipt = receiptService.getReceiptByOrderId(orderId);
+        Receipt result = receiptService.getReceiptByOrderId(orderId);
 
         // Assert
-        assertNotNull(actualReceipt);
-        assertEquals(expectedReceipt, actualReceipt);
-        verify(receiptRepository).findByOrderId(orderId);
+        assertNotNull(result);
+        assertEquals(orderId, result.getOrderId());
+        verify(receiptRepository, times(2)).findByOrderId(orderId);
     }
 
     @Test
-    void getReceiptByOrderId_nonExistingOrderId_returnsNull() {
+    void testGetReceiptByOrderId_NotFound() {
         // Arrange
-        String orderId = "nonExistingOrder";
+        String orderId = "12345";
         when(receiptRepository.findByOrderId(orderId)).thenReturn(null);
 
-        // Act
-        Receipt actualReceipt = receiptService.getReceiptByOrderId(orderId);
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            receiptService.getReceiptByOrderId(orderId);
+        });
 
-        // Assert
-        assertNull(actualReceipt);
-        verify(receiptRepository).findByOrderId(orderId);
+        assertEquals("Receipt Details Not Found", exception.getMessage());
+        verify(receiptRepository, times(1)).findByOrderId(orderId);
     }
 }
