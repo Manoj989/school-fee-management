@@ -21,4 +21,7 @@ public class User {
     @Schema(description = "The email address of the user.", example = "jane.doe@example.com")
     private String email;
 
+    @Schema(description = "The password of the user.", example = "securePassword123")
+    private String password;
+
 }

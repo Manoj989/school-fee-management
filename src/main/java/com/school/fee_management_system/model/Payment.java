@@ -6,26 +6,27 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.Date;
+
 @Setter
 @Getter
 @Document(collection = "payments")
 @Schema(description = "Represents a payment made by a student.")
 public class Payment {
     @Id
-    @Schema(description = "The unique identifier of the payment.", example = "payment1")
     private String id;
-
-    @Schema(description = "The ID of the student who made the payment.", example = "student1")
     private String studentId;
+    private String catalogId;
+    private double originalAmount;
+    private double amountDue;
+    private double paidAmount = 0.0;
+    private double fine = 0.0;
+    private Date dueDate;
+    private String status; // e.g., "PAID", "PARTIAL", "PENDING"
+    private PaymentPlan paymentPlan;
+    private Date paymentDate;
 
-    @Schema(description = "The amount of the payment.", example = "250.00")
-    private double amount;
-
-    @Schema(description = "The status of the payment.", example = "Completed")
-    private String status;
-
-    @Schema(description = "The type of fee payment.", example = "Tution Fees")
-    private String paymentType;
-
-
+    // Getters and setters
 }
+
+

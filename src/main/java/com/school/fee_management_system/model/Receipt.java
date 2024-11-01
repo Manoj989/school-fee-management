@@ -3,6 +3,7 @@ package com.school.fee_management_system.model;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -17,8 +18,6 @@ public class Receipt {
     @Schema(description = "The unique identifier of the receipt.", example = "receipt1")
     private String id;
 
-    @Schema(description = "The order ID associated with this receipt.", example = "order1")
-    private String orderId;
 
     @Schema(description = "The payment ID associated with this receipt.", example = "payment1")
     private String paymentId;
@@ -31,5 +30,8 @@ public class Receipt {
 
     @Schema(description = "The amount paid when the receipt was issued.", example = "150.00")
     private double amount;
+
+    @Transient
+    private String message;
 
 }

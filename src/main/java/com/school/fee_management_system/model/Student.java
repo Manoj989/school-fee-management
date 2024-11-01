@@ -3,8 +3,11 @@ package com.school.fee_management_system.model;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
 
 @Setter
 @Getter
@@ -20,5 +23,12 @@ public class Student {
 
     @Schema(description = "The user ID associated with the student, used for login and other purposes.", example = "user1")
     private String userId;
+
+    @Schema(description = "Email.", example = "studentemail1@gmail.com")
+    private String email;
+
+    @Schema(description = "Define the catalog ID", example = "catalog1")
+    private String catalogId;
+
 
 }

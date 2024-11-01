@@ -22,12 +22,12 @@ public class ReceiptController {
     @ApiResponse(responseCode = "200", description = "Receipt retrieved successfully",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponseDetails.class)))
-    @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponseDetails<Receipt>> getReceipt(@PathVariable String orderId) {
-        if (orderId == null || orderId.isEmpty()) {
+    @GetMapping("/{receiptid}")
+    public ResponseEntity<ApiResponseDetails<Receipt>> getReceipt(@PathVariable String receiptid) {
+        if (receiptid == null || receiptid.isEmpty()) {
             throw new BadRequestException("Order ID cannot be null or empty");
         }
-        Receipt receipt = receiptService.getReceiptByOrderId(orderId);
+        Receipt receipt = receiptService.getReceiptByReceiptId(receiptid);
         return ResponseEntity.ok(new ApiResponseDetails<>(true,200, "Receipt retrieved successfully", receipt));
     }
 }

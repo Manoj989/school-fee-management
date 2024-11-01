@@ -15,10 +15,13 @@ public class Catalog {
     @Schema(description = "The unique identifier of the catalog.", example = "catalog1", readOnly = true)
     private String id;
 
-    @Schema(description = "The name of the catalog.", example = "Tution Fees")
+    @Schema(description = "The name of the catalog.", example = "Annual Tution Fees")
     private String name;
 
-    @Schema(description = "The fee associated with the catalog.", example = "150.00")
+    @Schema(description = "The fee associated with the catalog.", example = "100000")
     private double fee;
+
+    @Schema(description = "The educational program associated with the catalog.", example = "PRIMARY_SCHOOL")
+    private EducationalProgram program;
 
 }

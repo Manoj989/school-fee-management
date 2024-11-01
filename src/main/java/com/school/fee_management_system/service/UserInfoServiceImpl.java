@@ -5,12 +5,16 @@ import com.school.fee_management_system.Exception.ResourceNotFoundException;
 import com.school.fee_management_system.model.User;
 import com.school.fee_management_system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserInfoServiceImpl implements UserInfoService {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public User getUserById(String id) {
@@ -32,6 +36,8 @@ public class UserInfoServiceImpl implements UserInfoService {
             return "User Already Exists";
         }
         else {
+            String encodedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(encodedPassword);
             userRepository.save(user);
         }
         return "User is created";
