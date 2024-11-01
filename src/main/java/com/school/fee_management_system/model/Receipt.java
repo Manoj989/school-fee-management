@@ -29,4 +29,7 @@ public class Receipt {
     @Schema(description = "The type of fee payment.", example = "Tution Fees")
     private String receiptType;
 
+    @Schema(description = "The amount paid when the receipt was issued.", example = "150.00")
+    private double amount;
+
 }
