@@ -42,6 +42,7 @@ public class FeeCollectionServiceImpl implements FeeCollectionService {
         receipt.setPaymentId(payment.getId());
         receipt.setReceiptType(catalog.getName());
         receipt.setDate(new Date());
+        receipt.setAmount(catalog.getFee());
         receiptRepository.save(receipt);
 
         return receipt;
