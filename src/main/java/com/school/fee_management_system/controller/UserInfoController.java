@@ -62,7 +62,7 @@ public class UserInfoController {
     @ApiResponse(responseCode = "200", description = "User updated successfully",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponseDetails.class)))
-    @PostMapping("/update")
+    @PutMapping("/update")
     public ResponseEntity<ApiResponseDetails<String>> updateUser(@RequestBody User user) {
         if (user == null || user.getId() == null || user.getId().isEmpty()) {
             throw new BadRequestException("User or User ID cannot be null or empty");
