@@ -1,5 +1,6 @@
 package com.school.fee_management_system.service;
 
+import com.school.fee_management_system.Response.UnpaidStudentsResponse;
 import com.school.fee_management_system.model.*;
 import com.school.fee_management_system.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+
 
 @Service
 public class FeeCollectionServiceImpl implements FeeCollectionService {
@@ -30,6 +30,11 @@ public class FeeCollectionServiceImpl implements FeeCollectionService {
 
     @Autowired
     private SequenceService sequenceService;
+
+    @Autowired
+    private PaymentReminderScheduler paymentReminderScheduler;
+
+
 
 
 
@@ -79,7 +84,7 @@ public class FeeCollectionServiceImpl implements FeeCollectionService {
         payment.setStudentId(studentId);
         payment.setCatalogId(catalog.getId());
         payment.setOriginalAmount(catalog.getFee());
-        payment.setDueDate(java.sql.Date.valueOf(calculateDueDate()));
+        payment.setDueDate(java.sql.Date.valueOf(calculateDueDate(paymentPlan)));
         payment.setStatus("PENDING");
         return payment;
     }
@@ -151,22 +156,23 @@ public class FeeCollectionServiceImpl implements FeeCollectionService {
         return receipt;
     }
 
-    private LocalDate calculateDueDate() {
+    private LocalDate calculateDueDate(PaymentPlan paymentPlan) {
         LocalDate today = LocalDate.now();
-        return today.withDayOfMonth(today.lengthOfMonth());
+        return switch (paymentPlan) {
+            case ANNUAL -> today.plusYears(1);
+            case HALF_YEARLY -> today.plusMonths(6);
+            case QUARTERLY -> today.plusMonths(3);
+            default -> today.withDayOfMonth(today.lengthOfMonth());
+        };
     }
 
     private double calculateDiscount(double amount, PaymentPlan paymentPlan) {
-        switch (paymentPlan) {
-            case ANNUAL:
-                return amount - (amount * 0.15); // 15% discount
-            case QUARTERLY:
-                return amount - (amount * 0.05); // 5% discount
-            case HALF_YEARLY:
-                return amount - (amount * 0.10); // 10% discount
-            default:
-                return 0;
-        }
+        return switch (paymentPlan) {
+            case ANNUAL -> amount - (amount * 0.15); // 15% discount
+            case QUARTERLY -> amount - (amount * 0.05); // 5% discount
+            case HALF_YEARLY -> amount - (amount * 0.10); // 10% discount
+            default -> 0;
+        };
     }
     @Override
     public double getTotalFeesCollectedBetween(Date startDate, Date endDate) {
@@ -176,20 +182,30 @@ public class FeeCollectionServiceImpl implements FeeCollectionService {
     }
 
     @Override
-    public double getUnpaidPayments() {
-        List<Payment> payments=paymentRepository.findAll();
-        List<String> studentIds = payments.stream()
+    public List<UnpaidStudentsResponse> getUnpaidPayments() {
+        Date currentDate = new Date();
+        List<String> studentIds = paymentRepository.findAll().stream()
+                .filter(payment -> payment.getDueDate().after(currentDate))
                 .map(Payment::getStudentId)
+                .distinct()
                 .toList();
         List<Student> allStudents=studentRepository.findAll();
         allStudents.removeIf(student -> studentIds.contains(student.getId()));
-        List<String> catalogIds = allStudents.stream()
-                .map(Student::getCatalogId)
-                .collect(Collectors.toList());
-        Iterable<Catalog> catalogs = catalogRepository.findAllById(catalogIds);
-        return StreamSupport.stream(catalogs.spliterator(), false)
-                .mapToDouble(Catalog::getFee)  // Replace 'getFee' with the actual method name if different
-                .sum();
+
+        List<UnpaidStudentsResponse> list = new ArrayList<>();
+        for(Student s:allStudents){
+           Optional<Catalog> c= catalogRepository.findById(s.getCatalogId());
+           if (c.isPresent()){
+               UnpaidStudentsResponse unpaidStudentsResponse = new UnpaidStudentsResponse();
+               unpaidStudentsResponse.setStudentId(s.getId());
+               unpaidStudentsResponse.setStudentName(s.getName());
+               unpaidStudentsResponse.setCourseName(c.get().getName());
+               unpaidStudentsResponse.setDueAmount(c.get().getFee());
+               unpaidStudentsResponse.setStudentEmail(s.getEmail());
+               list.add(unpaidStudentsResponse);
+           }
+        }
+        return list;
     }
 
     @Override
@@ -212,8 +228,17 @@ public class FeeCollectionServiceImpl implements FeeCollectionService {
 
         }
         return payments.stream()
-                .mapToDouble(p -> p.getAmountDue() - p.getPaidAmount())
+                .mapToDouble(Payment::getAmountDue)
                 .sum();
+    }
+
+    public void sendReminders()
+    {
+        List<UnpaidStudentsResponse> list=this.getUnpaidPayments();
+        for(UnpaidStudentsResponse unpaidStudentsResponse:list){
+            paymentReminderScheduler.sendReminderEmail(unpaidStudentsResponse.getStudentEmail(),unpaidStudentsResponse.getStudentName(),unpaidStudentsResponse.getDueAmount());
+        }
+
     }
 }
 

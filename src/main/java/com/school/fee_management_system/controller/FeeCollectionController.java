@@ -2,6 +2,7 @@ package com.school.fee_management_system.controller;
 
 import com.school.fee_management_system.Response.ApiResponseDetails;
 import com.school.fee_management_system.Exception.BadRequestException;
+import com.school.fee_management_system.Response.UnpaidStudentsResponse;
 import com.school.fee_management_system.model.Payment;
 import com.school.fee_management_system.model.PaymentPlan;
 import com.school.fee_management_system.model.Receipt;
@@ -38,9 +39,9 @@ public class FeeCollectionController {
         return ResponseEntity.ok(new ApiResponseDetails<>(true, 200,"Fee collected successfully", receipt));
     }
     @GetMapping("/unpaid")
-    public ResponseEntity<Double> getUnpaidPayments() {
-       double unpayment=feeCollectionService.getUnpaidPayments();
-        return ResponseEntity.ok(unpayment);
+    public ResponseEntity<List<UnpaidStudentsResponse>> getUnpaidPayments() {
+        List<UnpaidStudentsResponse> unpaidStudentsResponse=feeCollectionService.getUnpaidPayments();
+        return ResponseEntity.ok(unpaidStudentsResponse);
     }
 
     @GetMapping("/due/{studentId}")
@@ -53,5 +54,11 @@ public class FeeCollectionController {
     public ResponseEntity<Double> getTotalFeesCollected(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
         double totalCollected = feeCollectionService.getTotalFeesCollectedBetween(startDate, endDate);
         return ResponseEntity.ok(totalCollected);
+    }
+
+    @GetMapping("/reminder")
+    public ResponseEntity<String> sendReminders() {
+        feeCollectionService.sendReminders();
+        return ResponseEntity.ok("Reminders Sent Successfully");
     }
 }
